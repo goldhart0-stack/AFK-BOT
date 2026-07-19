@@ -7,7 +7,7 @@ When someone mentions an AFK user, the bot replies with the AFK reason.
 
 1. Install dependencies:
    ```bash
-   npm install
+   npm install --omit=dev
    ```
 2. Copy `.env.example` to `.env` and add your bot token:
    ```bash
