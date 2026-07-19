@@ -1,0 +1,15 @@
+{
+  "name": "afk-discord-bot",
+  "version": "1.0.0",
+  "description": "A simple Discord AFK bot that stays online and responds when someone mentions an AFK user",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.2",
+    "dotenv": "^16.4.2"
+  }
+}
