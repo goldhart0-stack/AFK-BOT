@@ -75,7 +75,20 @@ client.on(Events.MessageCreate, async (message) => {
       voiceConnections.set(message.guild.id, connection);
       await message.reply(`Joined ${message.member.voice.channel.name}.`);
     } catch (error) {
+      const currentStatus = connection.state.status;
+      if (
+        currentStatus === VoiceConnectionStatus.Ready ||
+        currentStatus === VoiceConnectionStatus.Connecting ||
+        currentStatus === VoiceConnectionStatus.Signalling
+      ) {
+        voiceConnections.set(message.guild.id, connection);
+        await message.reply(`Joined ${message.member.voice.channel.name}.`);
+        return;
+      }
+
+      console.error('Voice join failed:', error);
       connection.destroy();
+      voiceConnections.delete(message.guild.id);
       const reply = formatVoiceJoinPermissionError(error);
       await message.reply(reply);
     }
