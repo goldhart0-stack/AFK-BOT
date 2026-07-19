@@ -1,4 +1,10 @@
 import { Client, GatewayIntentBits, Events, ActivityType } from 'discord.js';
+import {
+  entersState,
+  getVoiceConnection,
+  joinVoiceChannel,
+  VoiceConnectionStatus,
+} from '@discordjs/voice';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -13,6 +19,7 @@ const client = new Client({
 
 const prefix = (process.env.PREFIX || 'p!').trim();
 const afkUsers = new Map();
+const voiceConnections = new Map();
 const rawToken = process.env.DISCORD_TOKEN || process.env.BOT_TOKEN || '';
 const token = rawToken.trim();
 
@@ -63,6 +70,50 @@ client.on(Events.MessageCreate, async (message) => {
     return;
   }
 
+  if (command === 'join') {
+    if (!message.member?.voice?.channel) {
+      await message.reply('You need to be in a voice channel to use that command.');
+      return;
+    }
+
+    const existingConnection = getVoiceConnection(message.guild.id) || voiceConnections.get(message.guild.id);
+    if (existingConnection) {
+      await message.reply('I am already connected to a voice channel.');
+      return;
+    }
+
+    const connection = joinVoiceChannel({
+      channelId: message.member.voice.channel.id,
+      guildId: message.guild.id,
+      adapterCreator: message.guild.voiceAdapterCreator,
+      selfMute: false,
+      selfDeaf: false,
+    });
+
+    try {
+      await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
+      voiceConnections.set(message.guild.id, connection);
+      await message.reply(`Joined ${message.member.voice.channel.name}.`);
+    } catch (error) {
+      connection.destroy();
+      await message.reply('I could not join the voice channel. Please check my permissions.');
+    }
+    return;
+  }
+
+  if (command === 'leave') {
+    const connection = getVoiceConnection(message.guild.id) || voiceConnections.get(message.guild.id);
+    if (!connection) {
+      await message.reply('I am not connected to a voice channel.');
+      return;
+    }
+
+    connection.destroy();
+    voiceConnections.delete(message.guild.id);
+    await message.reply('Left the voice channel.');
+    return;
+  }
+
   if (command === 'back') {
     afkUsers.delete(key);
     await message.reply('✅ Welcome back!');
@@ -70,7 +121,9 @@ client.on(Events.MessageCreate, async (message) => {
 });
 
 client.login(token).catch((error) => {
-  console.error('❌ Invalid Discord token. Make sure you copied the bot token from the Discord Developer Portal and set it as DISCORD_TOKEN or BOT_TOKEN.');
-  console.error(error);
+  console.error('❌ Discord login failed. Check that the bot token is correct and that the bot is enabled.');
+  if (error?.message) {
+    console.error(error.message);
+  }
   process.exit(1);
 });
