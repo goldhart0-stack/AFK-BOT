@@ -11,8 +11,15 @@ const client = new Client({
   ],
 });
 
-const prefix = (process.env.PREFIX || '!').trim();
+const prefix = (process.env.PREFIX || 'p!').trim();
 const afkUsers = new Map();
+const rawToken = process.env.DISCORD_TOKEN || process.env.BOT_TOKEN || '';
+const token = rawToken.trim();
+
+if (!token) {
+  console.error('❌ Missing Discord token. Set DISCORD_TOKEN or BOT_TOKEN in your environment.');
+  process.exit(1);
+}
 
 client.once(Events.ClientReady, (readyClient) => {
   console.log(`✅ Logged in as ${readyClient.user.tag}`);
@@ -62,4 +69,8 @@ client.on(Events.MessageCreate, async (message) => {
   }
 });
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(token).catch((error) => {
+  console.error('❌ Invalid Discord token. Make sure you copied the bot token from the Discord Developer Portal and set it as DISCORD_TOKEN or BOT_TOKEN.');
+  console.error(error);
+  process.exit(1);
+});
