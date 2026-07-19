@@ -2,7 +2,9 @@ export function formatVoiceJoinPermissionError(error) {
   const message = error?.message || '';
   const code = error?.code;
 
-  if (code === 50001 || /missing permissions/i.test(message) || /permission/i.test(message)) {
+  const isPermissionError = code === 50001 || /missing permissions/i.test(message) || /permission/i.test(message);
+
+  if (isPermissionError) {
     return [
       'I could not join the voice channel. Please check my permissions.',
       '',
@@ -15,12 +17,5 @@ export function formatVoiceJoinPermissionError(error) {
     ].join('\n');
   }
 
-  return [
-    'I could not join the voice channel. Please check my permissions.',
-    '',
-    'The bot needs these permissions in the voice channel and server:',
-    '- Connect',
-    '- Speak',
-    '- View Channel',
-  ].join('\n');
+  return 'I could not join the voice channel.';
 }

@@ -13,9 +13,8 @@ test('formats a missing-connect permission error clearly', () => {
 });
 
 test('falls back to a generic message when the error is unknown', () => {
-  const message = formatVoiceJoinPermissionError({ message: 'Something else went wrong' });
+  const message = formatVoiceJoinPermissionError({ message: 'Voice connection timed out' });
 
-  assert.match(message, /permissions/i);
-  assert.match(message, /Connect/i);
-  assert.match(message, /Speak/i);
+  assert.match(message, /could not join the voice channel/i);
+  assert.doesNotMatch(message, /permissions/i);
 });
