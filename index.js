@@ -56,7 +56,7 @@ client.on(Events.MessageCreate, async (message) => {
   const args = content.slice(prefix.length).trim().split(/\s+/);
   const command = args.shift()?.toLowerCase();
 
-  if (command === 'afkk') {
+  if (command === 'afk') {
     const reason = args.join(' ') || 'No reason provided.';
     afkUsers.set(key, { reason, since: new Date() });
     await message.reply(`✅ You are now AFK: ${reason}`);
