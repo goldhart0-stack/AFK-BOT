@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Events, ActivityType } from 'discord.js';
+import { Client, GatewayIntentBits, Events, ActivityType, Partials } from 'discord.js';
 import {
   entersState,
   getVoiceConnection,
@@ -6,6 +6,7 @@ import {
   VoiceConnectionStatus,
 } from '@discordjs/voice';
 import dotenv from 'dotenv';
+import { formatVoiceJoinPermissionError } from './voicePermissions.js';
 
 dotenv.config();
 
@@ -13,8 +14,10 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.MessageContent,
   ],
+  partials: [Partials.Channel],
 });
 
 const prefix = (process.env.PREFIX || 'p!').trim();
@@ -96,7 +99,8 @@ client.on(Events.MessageCreate, async (message) => {
       await message.reply(`Joined ${message.member.voice.channel.name}.`);
     } catch (error) {
       connection.destroy();
-      await message.reply('I could not join the voice channel. Please check my permissions.');
+      const reply = formatVoiceJoinPermissionError(error);
+      await message.reply(reply);
     }
     return;
   }
